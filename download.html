@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Download - JerryGames</title>
+  <link rel="icon" href="assets/jerrygames-favicon.png" />
+  <style>
+    :root{--accent:#fe6446;--muted:#6f6f6f}
+    body{margin:0;font-family:Inter,Roboto,system-ui;background:#fff;color:#111}
+    .top{display:flex;align-items:center;gap:12px;padding:12px 14px;box-shadow:0 4px 12px rgba(0,0,0,0.06)}
+    .logo img{height:34px}
+    .container{max-width:760px;margin:28px auto;padding:0 16px}
+    .card{border-radius:12px;overflow:hidden;box-shadow:0 14px 40px rgba(0,0,0,0.08);padding:18px;background:#fff}
+    .app-head{display:flex;gap:14px;align-items:center}
+    .app-icon{width:84px;height:84px;border-radius:16px;object-fit:cover;border:1px solid #eee}
+    h1{margin:0;font-size:20px}
+    .muted{color:#666;margin-top:6px}
+    .btn{display:inline-block;background:var(--accent);color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:800}
+    .secondary{background:#f2f2f2;color:#222;margin-left:10px}
+    .section{margin-top:18px}
+    .note{font-size:13px;color:var(--muted);margin-top:8px}
+    .link-list{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+    .section-title{font-weight:800}
+    .disabled{opacity:.6;pointer-events:none}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="logo"><a href="index.html"><img src="assets/jerrygames-logo.png" alt="JerryGames"></a></div>
+    <div style="margin-left:8px;font-weight:700">JerryGames</div>
+  </header>
+
+  <main class="container">
+    <div class="card" id="downloadCard" aria-live="polite">
+      <div class="app-head">
+        <img id="dlIcon" class="app-icon" src="assets/jerrygames-favicon.png" alt="icon" />
+        <div>
+          <h1 id="dlTitle">App name</h1>
+          <div id="dlSubtitle" class="muted">Category · rating</div>
+        </div>
+      </div>
+
+      <div class="section" id="dlDesc"></div>
+
+      <div class="section" id="downloadSection">
+        <div class="section-title">Download options</div>
+        <div class="link-list" id="linkList">
+          <!-- Buttons injected by JS -->
+        </div>
+        <div class="note">If a file doesn't download, your browser or device may block direct APK installations. Use a trusted store where possible.</div>
+      </div>
+
+      <div style="margin-top:18px">
+        <a href="index.html" class="secondary" style="padding:10px 12px;border-radius:8px;text-decoration:none;color:#333;border:1px solid #eee">← Back to store</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    /***********************************************************
+     * DATA: All apps from index.html (match their data-id)
+     ***********************************************************/
+    const DATA = {
+      "pubg-mobile": {
+        title:"PUBG Mobile: Advance Server",
+        subtitle:"Battle Royale · Early Access · ★ 4.7",
+        icon:"assets/images/pubg/pubgthumb.jpg",
+        description:"Test unreleased PUBG Mobile updates, features, and maps before public release. Early access build for selected players.",
+        verifyVideoId:"VIDEO_ID_PUBG",
+        download_ios:"#"
+      },
+      "ml-advance": {
+        title:"Mobile Legends: Advance Server",
+        subtitle:"MOBA · Early Access · ★ 4.7",
+        icon:"assets/images/mlbb/ml-advance-thumb.jpg",
+        description:"Join the Advance Server to test new features and heroes before public release. Limited slots.",
+        verifyVideoId:"VIDEO_ID_ML",
+        download_ios:"#"
+      },
+      "freefire": {
+        title:"Free Fire Max",
+        subtitle:"Battle Royale · ★ 4.4",
+        icon:"assets/images/freefire/freefirethumb.jpg",
+        description:"Fast-paced battle royale experience with HD graphics and intense matches.",
+        verifyVideoId:"VIDEO_ID_FREEFIRE",
+        download_ios:"#"
+      },
+      "gta-vicecity": {
+        title:"GTA: Vice City Mod",
+        subtitle:"Open World · ★ 4.8",
+        icon:"assets/images/gta/gtathumb.jpg",
+        description:"Experience the legendary crime-filled world of Vice City on mobile.",
+        verifyVideoId:null,
+        download_ios:"#"
+      },
+      "cod-mobile": {
+        title:"Call of Duty: Mobile",
+        subtitle:"Shooter · ★ 4.5",
+        icon:"assets/images/cod-thumb.jpg",
+        description:"Fast-paced shooter with Battle Royale and Ranked Multiplayer.",
+        verifyVideoId:"VIDEO_ID_COD",
+        download_ios:"#"
+      },
+      "whatsapp": {
+        title:"WhatsApp",
+        subtitle:"Messaging · ★ 4.2",
+        icon:"assets/images/apps/whatsapp-thumb.jpg",
+        description:"Messaging app — chat, voice & video calls.",
+        verifyVideoId:null,
+        download_ios:"#"
+      },
+      "spotify": {
+        title:"Spotify",
+        subtitle:"Music · ★ 4.5",
+        icon:"assets/images/apps/spotify-thumb.jpg",
+        description:"Music & podcasts — millions of tracks.",
+        verifyVideoId:null,
+        download_ios:"#"
+      },
+      "tiktok": {
+        title:"TikTok",
+        subtitle:"Videos · ★ 4.3",
+        icon:"assets/images/apps/tiktok-thumb.jpg",
+        description:"Short video platform for creators.",
+        verifyVideoId:null,
+        download_ios:"#"
+      },
+      "instagram": {
+        title:"Instagram",
+        subtitle:"Social · ★ 4.4",
+        icon:"assets/images/apps/instagram-thumb.jpg",
+        description:"Photo & short-video social platform.",
+        verifyVideoId:null,
+        download_ios:"#"
+      },
+      "snapchat": {
+        title:"Snapchat",
+        subtitle:"Camera · ★ 4.1",
+        icon:"assets/images/apps/snapchat-thumb.jpg",
+        description:"Camera & ephemeral messaging.",
+        verifyVideoId:null,
+        download_ios:"#"
+      }
+    };
+
+    /***********************************************************
+     * Aliases to fix id mismatches (like pubg-advance → pubg-mobile)
+     ***********************************************************/
+    const ALIASES = {
+      "pubg": "pubg-mobile",
+      "pubgmobile": "pubg-mobile",
+      "pubg-advance": "pubg-mobile",
+      "pubg_mobile": "pubg-mobile",
+      "mlbb": "ml-advance",
+      "ml_adventure": "ml-adventure",
+      "cod": "cod-mobile"
+    };
+
+    const qs = s => document.querySelector(s);
+    const params = new URLSearchParams(location.search);
+    const raw = (params.get('app') || '').trim().toLowerCase();
+
+    function norm(s){ return s.replace(/\s+/g,'').replace(/_/g,'-'); }
+
+    function resolveKey(id){
+      if(DATA[id]) return id;
+      if(ALIASES[id]) return ALIASES[id];
+      const found = Object.keys(DATA).find(k=>k.includes(id) || id.includes(k));
+      return found || null;
+    }
+
+    const key = resolveKey(norm(raw));
+    console.log('Resolved key:', key, 'from raw:', raw);
+
+    if(!key){
+      qs('#dlTitle').textContent = 'App not found';
+      qs('#dlSubtitle').textContent = 'Category · rating';
+      qs('#dlDesc').textContent = 'No information available for this app.';
+      qs('#linkList').innerHTML = '';
+    } else {
+      const app = DATA[key];
+      qs('#dlTitle').textContent = app.title;
+      qs('#dlSubtitle').textContent = app.subtitle;
+      qs('#dlDesc').textContent = app.description;
+      qs('#dlIcon').src = app.icon;
+
+      const list = qs('#linkList');
+      list.innerHTML = '';
+
+      // ✅ Verify & Download (Android)
+      const verify = document.createElement('a');
+      verify.href = 'verify.html?app=' + encodeURIComponent(key) + '&platform=android';
+      verify.className = 'btn';
+      verify.textContent = 'Verify & Download (Android)';
+      list.appendChild(verify);
+
+      // ✅ Open on App Store (iOS)
+      const ios = document.createElement('a');
+      ios.className = 'btn secondary';
+      if(app.download_ios && app.download_ios !== '#'){
+        ios.href = app.download_ios;
+        ios.textContent = 'Open on App Store';
+        ios.target = '_blank';
+      } else {
+        ios.href = '#';
+        ios.textContent = 'iOS not available';
+        ios.classList.add('disabled');
+      }
+      list.appendChild(ios);
+    }
+  </script>
+</body>
+</html>

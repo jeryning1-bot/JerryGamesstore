@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>JerryGames - App</title>
+  <link rel="icon" href="assets/jerrygames-favicon.png" />
+  <style>
+    :root{--accent:#fe6446;--muted:#6f6f6f}
+    body{margin:0;font-family:Inter,Roboto,system-ui;background:#fff;color:#111}
+    .top{display:flex;align-items:center;gap:12px;padding:12px 14px;box-shadow:0 4px 12px rgba(0,0,0,0.06)}
+    .logo img{height:34px}
+    .container{max-width:940px;margin:18px auto;padding:0 16px}
+    .card{border-radius:12px;overflow:hidden;box-shadow:0 14px 40px rgba(0,0,0,0.08)}
+    .hero{height:320px;background-position:center;background-size:cover;background-repeat:no-repeat;background-color:#eee}
+    .meta{padding:18px;background:#fff;display:flex;gap:12px;align-items:flex-start}
+    .meta-left{flex:1}
+    .meta-right{width:120px;text-align:right}
+    h1{margin:0;font-size:22px;display:flex;align-items:center;gap:12px}
+    #appIcon{width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid #eee}
+    .muted{color:#666;margin-top:6px}
+    .row{display:flex;gap:12px;align-items:center;margin-top:14px}
+    .download-btn{background:var(--accent);color:#fff;border:0;padding:12px 16px;border-radius:10px;font-weight:800;cursor:pointer}
+    .back{background:transparent;border:1px solid #ddd;padding:8px 12px;border-radius:10px;cursor:pointer}
+    .details{margin-top:12px;line-height:1.5}
+    .section-title{font-weight:800;margin-top:18px;margin-bottom:10px}
+    .gallery{display:flex;gap:10px;flex-wrap:wrap}
+    .thumb{width:120px;height:80px;border-radius:8px;background-size:cover;background-position:center;border:1px solid #eee;cursor:pointer}
+    .reviews{margin-top:14px}
+    .review{border:1px solid #eee;padding:10px;border-radius:8px;margin-bottom:8px}
+    .review .who{font-weight:700}
+    .stars{color:#ffb84d;font-weight:800;margin-right:8px}
+    .review-form{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+    .review-form input, .review-form textarea, .review-form select{padding:8px;border-radius:8px;border:1px solid #ddd;width:100%;font-size:14px}
+    .review-form textarea{min-height:80px;resize:vertical}
+    .meta-small{font-size:13px;color:#666}
+    .fallback {padding:28px;text-align:center;color:#666}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="logo"><a href="index.html"><img src="assets/jerrygames-logo.png" alt="JerryGames"></a></div>
+    <div style="margin-left:8px;font-weight:700">JerryGames</div>
+  </header>
+
+  <main class="container" id="appContainer" style="margin-top:8px">
+    <div class="card" id="appCard" role="main">
+      <div id="heroImage" class="hero" aria-hidden="true"></div>
+
+      <div class="meta">
+        <div class="meta-left">
+          <h1>
+            <img id="appIcon" src="assets/jerrygames-favicon.png" alt="icon" />
+            <span id="appTitle">App title</span>
+          </h1>
+          <div class="muted" id="appSubtitle">Category · ★ rating</div>
+
+          <div class="row" style="justify-content:flex-start;margin-top:12px">
+            <button id="downloadBtn" class="download-btn">Download</button>
+            <button id="backBtn" class="back">← Back</button>
+          </div>
+
+          <div class="details" id="appDetails"></div>
+        </div>
+
+        <div class="meta-right">
+          <!-- left intentionally empty for layout or future info -->
+        </div>
+      </div>
+
+      <!-- PHOTOS -->
+      <div style="padding:0 18px 18px;">
+        <div class="section-title">Photos</div>
+        <div id="gallery" class="gallery" aria-live="polite"></div>
+      </div>
+
+      <!-- REVIEWS -->
+      <div style="padding:0 18px 28px;">
+        <div class="section-title">Reviews</div>
+        <div id="reviewsList" class="reviews" aria-live="polite"></div>
+
+        <div class="section-title" style="font-size:16px">Add a review</div>
+        <form id="reviewForm" class="review-form" onsubmit="return false;">
+          <input id="revName" type="text" placeholder="Your name" required />
+          <select id="revRating" required>
+            <option value="">Rating</option>
+            <option value="5">★★★★★ 5</option>
+            <option value="4">★★★★ 4</option>
+            <option value="3">★★★ 3</option>
+            <option value="2">★★ 2</option>
+            <option value="1">★ 1</option>
+          </select>
+          <textarea id="revText" placeholder="Write your review..." required></textarea>
+          <button id="postReview" class="download-btn" type="button">Post review</button>
+        </form>
+      </div>
+
+      <!-- Visible fallback if something wrong -->
+      <div id="fallback" class="fallback" style="display:none">
+        Oops — something didn't load. Open browser DevTools Console to see the error.
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // tiny helpers
+    const qs = s => document.querySelector(s);
+    const idKey = (appId, key) => `jerrygames:${appId}:${key}`;
+    const saveJSON = (key,obj) => localStorage.setItem(key, JSON.stringify(obj));
+    const loadJSON = (key,def) => { try{ const s=localStorage.getItem(key); return s?JSON.parse(s):def }catch(e){console.error(e); return def }};
+
+    // dataset (games + popular apps). IDs must match index.html data-id attributes.
+    const DATA = {
+      "ml-advance": {
+        id:"ml-advance",
+        title:"Mobile Legends: Advance Server",
+        subtitle:"MOBA · Early Access · ★ 4.7",
+        img:"assets/images/mlbb/ml-advance-full.jpg",
+        icon:"assets/images/mlbb/ml-advance-thumb.jpg",
+        download_android:"#",   // no direct APK (verify flow)
+        download_ios:"#",
+        description:"Join the Advance Server to test new features and heroes before public release. Limited slots.",
+        photos:[
+          "assets/images/mlbb/mlbb1.jpg",
+          "assets/images/mlbb/mlbb2.jpg",
+          "assets/images/mlbb/mlbb3.jpg"
+        ],
+        reviews: [
+          {name:"Anjali", rating:5, text:"Amazing update! The new hero is awesome.", time:Date.now()-86400000*3},
+          {name:"Kiran", rating:4, text:"Great graphics but matchmaking sometimes slow.", time:Date.now()-86400000*2},
+          {name:"Suresh", rating:5, text:"Love testing unreleased heroes!", time:Date.now()-86400000}
+        ]
+      },
+
+      "pubg-mobile": {
+        id: "pubg-mobile",
+        title: "PUBG Mobile: Advance Server",
+        subtitle: "Battle Royale · Early Access · ★ 4.7",
+        img: "assets/images/pubg/pubgful.jpg",
+        icon: "assets/images/pubg/pubgthumb.jpg",
+        download_android: "#",
+        download_ios: "#",
+        description: "Join the PUBG Mobile Advance Server to test upcoming maps, modes and weapon updates before public release.",
+        photos: [
+          "assets/images/pubg/pubg1.jpg",
+          "assets/images/pubg/pubg2.jpg",
+          "assets/images/pubg/pubg3.jpg"
+        ],
+        reviews: [
+          { name: "Ravi", rating: 5, text: "Amazing! Got early access to new maps!", time: Date.now() - 86400000 * 3 },
+          { name: "Sneha", rating: 4, text: "Smooth gameplay, can't wait for the official update.", time: Date.now() - 86400000 * 2 }
+        ]
+      },
+
+      "freefire": {
+        id:"freefire",
+        title:"Free Fire Advance Server",
+        subtitle:"Battle Royale · ★ 4.4",
+        img:"assets/images/freefire/freefireful.jpg",
+        icon:"assets/images/freefire/freefirethumb.jpg",
+        download_android:"#",
+        download_ios:"#",
+        description:"Fast-paced battle royale experience with HD graphics and intense matches.",
+        photos:["assets/images/freefire/freefire1.jpg","assets/images/freefire/freefire2.jpg","assets/images/freefire/freefire3.jpg"],
+        reviews: [
+          {name:"Manish", rating:5, text:"Smooth gameplay and great maps.", time:Date.now()-86400000*3},
+          {name:"Puja", rating:4, text:"Graphics are stunning!", time:Date.now()-86400000*2},
+          {name:"Rahul", rating:3, text:"Lag sometimes, but overall fun.", time:Date.now()-86400000}
+        ]
+      },
+
+      "gta-vicecity": {
+        id:"gta-vicecity",
+        title:"GTA: Vice City MOD",
+        subtitle:"Open World · Action · ★ 4.8",
+        img:"assets/images/gta/gtafull.jpg",
+        icon:"assets/images/gta/gtathumb.jpg",
+        download_android:"#",
+        download_ios:"#",
+        description:"Experience the legendary Vice City — explore, drive, and fight through neon 80s streets.",
+        photos:[
+          "assets/images/gta/gta-1.jpg",
+          "assets/images/gta/gta-2.jpg",
+          "assets/images/gta/gta-3.jpg"
+        ],
+        reviews: [
+          {name:"Deepak", rating:5, text:"Nostalgic classic! Still love it after years.", time:Date.now()-86400000*4},
+          {name:"Priya", rating:4, text:"Controls could be smoother but gameplay is legendary.", time:Date.now()-86400000*2}
+        ]
+      },
+
+      "cod-mobile": {
+        id: "cod-mobile",
+        title: "Call of Duty: Mobile Advance Server",
+        subtitle: "FPS · Multiplayer · ★ 4.7",
+        img: "assets/images/cod-mobile-full.jpg",
+        icon: "assets/images/cod-thumb.jpg",
+        download_android:"#",
+        download_ios:"#",
+        description: "Fast-paced first-person shooter with Battle Royale, Ranked Multiplayer, and iconic maps.",
+        photos: [
+          "assets/images/cod-mobile-full.jpg",
+          "assets/images/cod-1.jpg",
+          "assets/images/cod-2.jpg"
+        ],
+        reviews: [
+          { name: "Neha",  rating: 5, text: "Gunplay top-notch! Ranked matches are intense.", time: Date.now()-86400000*4 },
+          { name: "Rohit", rating: 4, text: "BR mode mast hai, thoda lag kabhi hota hai.", time: Date.now()-86400000*2 }
+        ]
+      },
+
+      /* Popular apps (same structure) */
+      "whatsapp": {
+        id: "whatsapp",
+        title: "WhatsApp",
+        subtitle: "Messaging · ★ 4.2",
+        img: "assets/images/apps/whatsapp-full.jpg",
+        icon: "assets/images/apps/whatsapp-thumb.jpg",
+        download_android: "#",
+        download_ios: "https://apps.apple.com/app/whatsapp-messenger/id310633997",
+        description: "WhatsApp — simple, reliable messaging and calling.",
+        photos: ["assets/images/apps/whatsapp-full.jpg"],
+        reviews: [
+          { name: "Riya", rating: 5, text: "Essential for chat & calls.", time: Date.now()-86400000*6 },
+          { name: "Amit", rating: 4, text: "Works well, needs better backups.", time: Date.now()-86400000*2 }
+        ]
+      },
+
+      "spotify": {
+        id: "spotify",
+        title: "Spotify",
+        subtitle: "Music · ★ 4.5",
+        img: "assets/images/apps/spotify-full.jpg",
+        icon: "assets/images/apps/spotify-thumb.jpg",
+        download_android: "#",
+        download_ios: "https://apps.apple.com/app/spotify-music-and-podcasts/id324684580",
+        description: "Spotify — music and podcasts, millions of tracks and playlists.",
+        photos: ["assets/images/apps/spotify-full.jpg"],
+        reviews: [
+          { name: "Neel", rating: 5, text: "Great music discovery.", time: Date.now()-86400000*10 },
+          { name: "Tara", rating: 4, text: "Ad experience could improve.", time: Date.now()-86400000*4 }
+        ]
+      },
+
+      "tiktok": {
+        id: "tiktok",
+        title: "TikTok",
+        subtitle: "Short videos · ★ 4.3",
+        img: "assets/images/apps/tiktok-full.jpg",
+        icon: "assets/images/apps/tiktok-thumb.jpg",
+        download_android: "#",
+        download_ios: "https://apps.apple.com/app/tiktok-global/id835599320",
+        description: "TikTok — short-form mobile videos that are entertaining and creative.",
+        photos: ["assets/images/apps/tiktok-full.jpg"],
+        reviews: [
+          { name: "Sana", rating: 5, text: "So addictive and fun.", time: Date.now()-86400000*8 }
+        ]
+      },
+
+      "instagram": {
+        id: "instagram",
+        title: "Instagram",
+        subtitle: "Photo & video · ★ 4.4",
+        img: "assets/images/apps/instagram-full.jpg",
+        icon: "assets/images/apps/instagram-thumb.jpg",
+        download_android: "#",
+        download_ios: "https://apps.apple.com/app/instagram/id389801252",
+        description: "Instagram — share photos and videos, stories, Reels and more.",
+        photos: ["assets/images/apps/instagram-full.jpg"],
+        reviews: [
+          { name: "Priya", rating: 5, text: "Great for sharing moments.", time: Date.now()-86400000*12 }
+        ]
+      },
+
+      "snapchat": {
+        id: "snapchat",
+        title: "Snapchat",
+        subtitle: "Camera & chat · ★ 4.1",
+        img: "assets/images/apps/snapchat-full.jpg",
+        icon: "assets/images/apps/snapchat-thumb.jpg",
+        download_android: "#",
+        download_ios: "https://apps.apple.com/app/snapchat/id447188370",
+        description: "Snapchat — quick photos & videos that disappear; chats, filters, and lenses.",
+        photos: ["assets/images/apps/snapchat-full.jpg"],
+        reviews: [
+          { name: "Karan", rating: 4, text: "Fun filters and stories.", time: Date.now()-86400000*5 }
+        ]
+      }
+    };
+
+    (function initPage(){
+      try {
+        const params = new URLSearchParams(location.search);
+        const appId = params.get('app') || 'ml-advance';
+        console.log('appId =>', appId);
+
+        const data = DATA[appId];
+        const hero = qs('#heroImage');
+        const title = qs('#appTitle');
+        const subtitle = qs('#appSubtitle');
+        const details = qs('#appDetails');
+        const downloadBtn = qs('#downloadBtn');
+        const gallery = qs('#gallery');
+        const reviewsList = qs('#reviewsList');
+        const appIcon = qs('#appIcon');
+        const fallback = qs('#fallback');
+
+        if(!data){
+          console.warn('No data found for appId:', appId);
+          title.textContent = 'App not found';
+          details.textContent = 'No data available for: ' + appId;
+          downloadBtn.style.display = 'none';
+          if(fallback) fallback.style.display = 'block';
+          return;
+        }
+
+        // fill UI
+        title.textContent = data.title || '';
+        subtitle.textContent = data.subtitle || '';
+        details.textContent = data.description || '';
+
+        // set icon safely
+        const iconSrc = data.icon || data.img || 'assets/jerrygames-favicon.png';
+        const iconImg = new Image();
+        iconImg.onload = function(){ appIcon.src = iconSrc; };
+        iconImg.onerror = function(){ console.warn('Icon failed to load:', iconSrc); appIcon.src = 'assets/jerrygames-favicon.png'; };
+        iconImg.src = iconSrc;
+
+        // set hero image safely
+        if(data.img){
+          const img = new Image();
+          img.onload = function(){ hero.style.backgroundImage = `url('${data.img}')`; };
+          img.onerror = function(){ console.warn('Hero image failed to load:', data.img); hero.style.backgroundImage = 'none'; hero.style.backgroundColor = '#eee'; };
+          img.src = data.img;
+        } else {
+          hero.style.backgroundImage = 'none';
+          hero.style.backgroundColor = '#eee';
+        }
+
+        // Gallery
+        gallery.innerHTML = '';
+        const photos = Array.isArray(data.photos) ? data.photos : [];
+        if(photos.length === 0){
+          gallery.innerHTML = '<div class="meta-small">No photos available.</div>';
+        } else {
+          photos.forEach(p=>{
+            const t=document.createElement('div');
+            t.className='thumb';
+            // set image with safe loading
+            const preview = new Image();
+            preview.onload = ()=> t.style.backgroundImage = `url('${p}')`;
+            preview.onerror = ()=> {
+              console.warn('Gallery image failed:', p);
+              t.style.backgroundColor = '#f2f2f2';
+              t.textContent = 'no image';
+              t.style.display = 'flex';
+              t.style.alignItems = 'center';
+              t.style.justifyContent = 'center';
+              t.style.color = '#999';
+              t.style.fontSize = '12px';
+            };
+            preview.src = p;
+            gallery.appendChild(t);
+          });
+        }
+
+        // Reviews (persisted)
+        const reviewsKey = idKey(appId,'reviews');
+        let reviews = loadJSON(reviewsKey, Array.isArray(data.reviews) ? data.reviews : []);
+        renderReviews();
+
+        function renderReviews(){
+          reviewsList.innerHTML = '';
+          if(!reviews || reviews.length === 0){ reviewsList.innerHTML = '<div class="meta-small">No reviews yet.</div>'; return; }
+          reviews.slice().reverse().forEach((r)=>{
+            const rEl=document.createElement('div');
+            rEl.className='review';
+            rEl.innerHTML = `
+              <div><span class="who">${escapeHtml(r.name)}</span> · <span class="stars">${'★'.repeat(r.rating)}</span></div>
+              <div style="margin-top:8px;">${escapeHtml(r.text)}</div>`;
+            reviewsList.appendChild(rEl);
+          });
+        }
+
+        qs('#postReview').addEventListener('click', ()=>{
+          const name=qs('#revName').value.trim();
+          const rating=parseInt(qs('#revRating').value);
+          const text=qs('#revText').value.trim();
+          if(!name||!rating||!text){alert('Please fill all fields');return;}
+          reviews.push({name,rating,text,time:Date.now()});
+          saveJSON(reviewsKey,reviews);
+          qs('#revName').value='';qs('#revRating').value='';qs('#revText').value='';
+          renderReviews();
+        });
+
+        qs('#backBtn').onclick = ()=>location.href='index.html';
+
+        // === open download page for the current app ===
+        downloadBtn.onclick = ()=> {
+          location.href = 'download.html?app=' + encodeURIComponent(appId);
+        };
+
+      } catch (err) {
+        console.error('Initialization error:', err);
+        const fallback = qs('#fallback');
+        if(fallback) fallback.style.display = 'block';
+      }
+
+      function escapeHtml(s){ return String(s || '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
+    })();
+  </script>
+</body>
+</html>

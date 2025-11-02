@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>JerryGames - Home</title>
+  <meta name="description" content="JerryGames - discover and download games & apps" />
+  <link rel="icon" href="assets/jerrygames-favicon.png" />
+  <style>
+    :root {
+      --accent: #fe6446;
+      --muted: #6f6f6f;
+      --bg: #fff;
+      --nav-height: 72px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Roboto, system-ui;
+      background: var(--bg);
+      color: #171717;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .topbar {
+      position: fixed;
+      left: 0; right: 0; top: 0;
+      height: var(--nav-height);
+      display: flex; align-items: center;
+      padding: 10px 16px;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      z-index: 50;
+    }
+
+    .logo img { height: 36px; }
+
+    .search-wrap { flex: 1; position: relative; margin-left: 12px; }
+
+    .search {
+      display:flex; align-items:center;
+      background:#f8f8f8; border-radius:999px;
+      padding:8px 12px; border:1px solid #eee;
+    }
+
+    .search input { border:0; background:transparent; outline:0; width:100%; }
+
+    .suggestions {
+      position:absolute; left:6px; right:6px; top:52px;
+      background:#fff; border-radius:10px; border:1px solid #eee;
+      box-shadow:0 12px 30px rgba(0,0,0,0.06); max-height:300px;
+      overflow:auto; display:none; z-index:60;
+    }
+
+    .suggestions li { list-style:none; padding:8px; display:flex; gap:10px; align-items:center; cursor:pointer; }
+    .suggestions img { width:46px; height:46px; border-radius:8px; object-fit:cover; }
+
+    main { padding: calc(var(--nav-height) + 18px) 16px 140px; max-width:980px; margin:0 auto; }
+
+    /* Banner */
+    .banner-section { margin-bottom:18px; }
+    .banner-link { display:block; position:relative; overflow:hidden; border-radius:14px; }
+    .banner-link img { width:100%; height:220px; object-fit:cover; display:block; border-radius:14px; }
+
+    .banner-overlay {
+      position:absolute; bottom:0; left:0; right:0;
+      background:linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0));
+      color:#fff; padding:14px; display:flex; align-items:center; justify-content:space-between;
+    }
+
+    /* Bundle (Top Trending + Popular Apps) */
+    .bundle {
+      background: #fff;
+      color: #171717;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+    }
+
+    .bundle .muted { color: var(--muted); }
+
+    .carousel {
+      display:flex; gap:12px; overflow-x:auto; padding:8px;
+    }
+
+    .card {
+      min-width:150px;
+      background:#fff;
+      border-radius:12px;
+      padding:10px;
+      box-shadow:0 8px 18px rgba(0,0,0,0.06);
+      text-align:center;
+      cursor:pointer;
+      flex-shrink:0;
+      position:relative;
+    }
+
+    .card .thumb {
+      width:84px; height:84px; border-radius:18px;
+      background-size:cover; background-position:center; margin:0 auto;
+    }
+
+    .card .body { padding:0; }
+    .card .title { font-weight:700; color:#171717; margin-top:8px; }
+    .card .sub { font-size:13px; color:var(--muted); margin-top:4px; }
+
+    .card-actions { display:flex; gap:8px; margin-top:10px; justify-content:center; padding:0 6px; flex-wrap:wrap; }
+    .action-btn { padding:8px 10px; border-radius:8px; font-weight:700; font-size:13px; text-decoration:none; display:inline-block; }
+    .action-verify { background:linear-gradient(90deg,#00c2a8,#fe6446); color:#042226; box-shadow:0 8px 18px rgba(0,0,0,0.08); }
+    .action-ios { background:#f2f2f2; color:#222; border:1px solid #e6e6e6; }
+
+    .bottom-nav { position:fixed; left:0; right:0; bottom:0; height:72px; display:flex; align-items:center; justify-content:center; background:#fff; box-shadow:0 -6px 16px rgba(0,0,0,0.06); }
+    .nav-item { font-weight:700; color:var(--accent); }
+
+    @media(min-width:780px){ .card{ min-width:150px } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo"><img src="assets/jerrygames-logo.png" alt="JerryGames"></div>
+    <div class="search-wrap">
+      <div class="search">
+        <svg style="width:18px;height:18px;margin-right:8px" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35" stroke="#9b9b9b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="6" stroke="#9b9b9b" stroke-width="2"/></svg>
+        <input id="searchInput" type="search" placeholder="Search games & apps..." autocomplete="off" />
+      </div>
+      <div class="suggestions" id="suggestions">
+        <ul id="suggestionsList" style="margin:0;padding:6px"></ul>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Banner -->
+    <section class="banner-section" role="region" aria-label="Featured">
+      <a href="app.html?app=ml-advance" class="banner-link" aria-label="Open Mobile Legends Advance Server">
+        <img src="assets/images/mlfirst/mlfirst.png" alt="Mobile Legends Advance Server banner">
+        <div class="banner-overlay">
+          <div>
+            <div style="font-weight:800;font-size:16px;">Mobile Legends: Advance Server</div>
+            <div style="font-size:13px;opacity:0.9;">MOBA · Early Access · ★ 4.7</div>
+          </div>
+          <div>
+            <span style="background:#fff;color:#000;padding:8px 12px;border-radius:8px;font-weight:700;">Open</span>
+          </div>
+        </div>
+      </a>
+    </section>
+
+    <!-- Top Trending Games -->
+    <section class="bundle" aria-label="Top Trending">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(45deg,#ffb84d,#ff7a5a);display:flex;align-items:center;justify-content:center">🔥</div>
+        <div>
+          <div style="font-weight:800">Top Trending Games</div>
+          <div class="muted">Updated daily</div>
+        </div>
+      </div>
+
+      <div class="carousel" id="gamesCarousel">
+        <!-- PUBG Mobile (canonical id: pubg-mobile) -->
+        <article class="card" data-id="pubg-mobile" data-title="PUBG Mobile: Advance Server" data-full="assets/images/pubg/pubgful.jpg" data-desc="Test unreleased PUBG Mobile updates">
+          <div class="thumb" style="background-image:url('assets/images/pubg/pubgthumb.jpg')"></div>
+          <div class="body">
+            <div class="title">PUBG Mobile: Advance Server</div>
+            <div class="sub muted">Battle Royale · Early Access · ★ 4.7</div>
+          </div>
+        </article>
+
+        <!-- Mobile Legends -->
+        <article class="card" data-id="ml-advance" data-title="Mobile Legends: Advance Server" data-full="assets/images/mlbb/ml-advance-full.jpg" data-desc="Advance Server for testing new heroes & features.">
+          <div class="thumb" style="background-image:url('assets/images/mlbb/ml-advance-thumb.jpg')"></div>
+          <div class="body">
+            <div class="title">Mobile Legends: Advance Server</div>
+            <div class="sub muted">MOBA · ★ 4.7</div>
+          </div>
+        </article>
+
+        <!-- Free Fire -->
+        <article class="card" data-id="freefire" data-title="Free Fire Advance Server" data-full="assets/images/freefire/freefireful.jpg" data-desc="Fast battle royale with realistic graphics.">
+          <div class="thumb" style="background-image:url('assets/images/freefire/freefirethumb.jpg')"></div>
+          <div class="body">
+            <div class="title">Free Fire Advance Server</div>
+            <div class="sub muted">Battle Royale · ★ 4.4</div>
+          </div>
+        </article>
+
+        <!-- GTA -->
+        <article class="card" data-id="gta-vicecity" data-title="GTA: Vice City Mod" data-full="assets/images/gta/gtafull.jpg" data-desc="Explore the open-world city.">
+          <div class="thumb" style="background-image:url('assets/images/gta/gtathumb.jpg')"></div>
+          <div class="body">
+            <div class="title">GTA: Vice City Mod</div>
+            <div class="sub muted">Open World · ★ 4.8</div>
+          </div>
+        </article>
+
+        <!-- Call of Duty -->
+        <article class="card" data-id="cod-mobile" data-title="Call of Duty: Mobile" data-full="assets/images/cod-mobile-full.jpg" data-desc="High-fidelity shooter experience.">
+          <div class="thumb" style="background-image:url('assets/images/cod-thumb.jpg')"></div>
+          <div class="body">
+            <div class="title">Call of Duty: Mobile</div>
+            <div class="sub muted">Shooter · ★ 4.5</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Popular Apps -->
+    <section class="bundle" aria-label="Popular Apps">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(45deg,#6fc3ff,#5ad7a0);display:flex;align-items:center;justify-content:center">⭐</div>
+        <div>
+          <div style="font-weight:800">Popular Apps</div>
+          <div class="muted">Useful apps we recommend</div>
+        </div>
+      </div>
+
+      <div class="carousel" id="appsCarousel">
+        <article class="card app-card" data-id="whatsapp" data-title="WhatsApp" data-full="assets/images/apps/whatsapp-full.jpg" data-desc="Messaging app">
+          <div class="thumb" style="background-image:url('assets/images/apps/whatsapp-thumb.jpg')"></div>
+          <div class="body">
+            <div class="title">WhatsApp</div>
+            <div class="sub muted">Messaging · ★ 4.2</div>
+          </div>
+        </article>
+
+        <article class="card app-card" data-id="spotify" data-title="Spotify" data-full="assets/images/apps/spotify-full.jpg" data-desc="Music & podcasts">
+          <div class="thumb" style="background-image:url('assets/images/apps/spotify-thumb.jpg')"></div>
+          <div class="body">
+            <div class="title">Spotify</div>
+            <div class="sub muted">Music · ★ 4.5</div>
+          </div>
+        </article>
+
+        <article class="card app-card" data-id="tiktok" data-title="TikTok" data-full="assets/images/apps/tiktok-full.jpg" data-desc="Short videos">
+          <div class="thumb" style="background-image:url('assets/images/apps/tiktok-thumb.jpg')"></div>
+          <div class="body">
+            <div class="title">TikTok</div>
+            <div class="sub muted">Videos · ★ 4.3</div>
+          </div>
+        </article>
+
+        <article class="card app-card" data-id="instagram" data-title="Instagram" data-full="assets/images/apps/instagram-full.jpg" data-desc="Photo & video">
+          <div class="thumb" style="background-image:url('assets/images/apps/instagram-thumb.jpg')"></div>
+          <div class="body">
+            <div class="title">Instagram</div>
+            <div class="sub muted">Social · ★ 4.4</div>
+          </div>
+        </article>
+
+        <article class="card app-card" data-id="snapchat" data-title="Snapchat" data-full="assets/images/apps/snapchat-full.jpg" data-desc="Camera & ephemeral messaging">
+          <div class="thumb" style="background-image:url('assets/images/apps/snapchat-thumb.jpg')"></div>
+          <div class="body">
+            <div class="title">Snapchat</div>
+            <div class="sub muted">Camera · ★ 4.1</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <div style="height:220px"></div>
+  </main>
+
+  <div class="download-banner">
+    <img src="assets/jerrygames-logo.png" alt="logo" style="height:44px;border-radius:10px">
+    <div>
+      <div style="font-weight:800">JerryGames</div>
+      <div class="muted">Discover games & apps</div>
+    </div>
+    <div style="margin-left:auto"><a class="btn" href="#">Download</a></div>
+  </div>
+
+  <nav class="bottom-nav"><div class="nav-item">Home</div></nav>
+
+  <script>
+    // navigate to app details
+    function gotoApp(id){
+      if(!id) return;
+      location.href = 'app.html?app=' + encodeURIComponent(id);
+    }
+
+    // attach click handlers for cards (card body clickable)
+    document.querySelectorAll('.card').forEach(el=>{
+      el.addEventListener('click', function(e){
+        // if the click comes from an action button, let button handle it
+        if(e.target.closest('.card-actions') || e.target.tagName.toLowerCase() === 'a') return;
+        const id = el.getAttribute('data-id') || el.dataset.id;
+        if(id) gotoApp(id);
+      });
+    });
+
+    // build dataset from page elements (for search)
+    const input = document.getElementById('searchInput');
+    const suggestions = document.getElementById('suggestions');
+    const suggestionsList = document.getElementById('suggestionsList');
+
+    const items = Array.from(document.querySelectorAll('.card')).map(el=>({
+      id: el.getAttribute('data-id'),
+      title: el.getAttribute('data-title') || el.querySelector('.title')?.textContent || '',
+      el: el
+    }));
+
+    function norm(s){ return (s||'').toLowerCase(); }
+
+    input.addEventListener('input', ()=>{
+      const q = norm(input.value.trim());
+      items.forEach(i=>{
+        if(!q || norm(i.title).includes(q)){
+          i.el.style.display='';
+        } else {
+          i.el.style.display='none';
+        }
+      });
+
+      if(!q){ suggestions.style.display='none'; suggestionsList.innerHTML=''; return; }
+      const matches = items.filter(i => norm(i.title).includes(q)).slice(0,8);
+      suggestionsList.innerHTML = '';
+      if(matches.length===0){
+        suggestionsList.innerHTML = '<li class="no">No results</li>';
+      } else {
+        matches.forEach(m=>{
+          const li = document.createElement('li');
+          const img = document.createElement('img');
+          const bg = (m.el.querySelector('.thumb')?.style.backgroundImage || '');
+          const match = bg.match(/url\\(['"]?(.*?)['"]?\\)/);
+          if(match) img.src = match[1];
+          else img.src = 'assets/jerrygames-favicon.png';
+          const txt = document.createElement('div');
+          txt.style.minWidth='0';
+          const t = document.createElement('div');
+          t.textContent = m.title; t.style.fontWeight='700';
+          txt.appendChild(t);
+          li.appendChild(img);
+          li.appendChild(txt);
+          li.addEventListener('click', ()=> gotoApp(m.id));
+          suggestionsList.appendChild(li);
+        });
+      }
+      suggestions.style.display='block';
+    });
+
+    // hide suggestions on click outside
+    document.addEventListener('click', (e)=> {
+      if(!document.querySelector('.search-wrap').contains(e.target)){
+        suggestions.style.display='none';
+      }
+    });
+
+    // --- Inject action buttons under each card (Verify & App Store) ---
+    (function injectActions(){
+      const tiles = Array.from(document.querySelectorAll('.card, .app-card'));
+      tiles.forEach(tile => {
+        if(tile.querySelector('.card-actions')) return; // don't duplicate
+        const id = tile.getAttribute('data-id') || tile.dataset.id;
+        if(!id) return;
+
+        const actions = document.createElement('div');
+        actions.className = 'card-actions';
+
+        // Verify & Download (Android)
+        const verify = document.createElement('a');
+        verify.className = 'action-btn action-verify';
+        verify.href = 'verify.html?app=' + encodeURIComponent(id) + '&platform=android';
+        verify.textContent = 'Verify & Download';
+        verify.setAttribute('rel','noopener');
+        actions.appendChild(verify);
+
+        // Open on App Store (go to download page where iOS info lives)
+        const ios = document.createElement('a');
+        ios.className = 'action-btn action-ios';
+        ios.href = 'download.html?app=' + encodeURIComponent(id);
+        ios.textContent = 'Open on App Store';
+        ios.setAttribute('rel','noopener');
+        actions.appendChild(ios);
+
+        // append under body if exists, else append to tile
+        const body = tile.querySelector('.body') || tile;
+        body.parentNode.insertBefore(actions, body.nextSibling);
+      });
+    })();
+
+    // small touch improvement for carousels
+    document.querySelectorAll('.carousel').forEach(c=>{
+      c.addEventListener('touchstart', ()=>{}, {passive:true});
+    });
+  </script>
+</body>
+</html>
